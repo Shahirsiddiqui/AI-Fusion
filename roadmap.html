@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Roadmap Generator - AI Fusion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --primary: #6366f1;
+            --accent: #10b981;
+            --purple: #a855f7;
+            --yellow: #eab308;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--surface);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links {
+                display: flex;
+            }
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-actions {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .nav-actions {
+                display: flex;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Main Content */
+        main {
+            padding-top: 64px;
+        }
+
+        .page {
+            padding: 6rem 1.5rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .page-header-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--purple);
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .page-header h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--surface-light);
+            padding: 1.5rem;
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--background);
+            border: 1px solid var(--surface-light);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-textarea:hover,
+        .form-select:hover {
+            border-color: var(--surface-light);
+        }
+
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .form-helper {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-large svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Phase Card */
+        .phase-card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--surface-light);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .phase-header:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .phase-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+        }
+
+        .phase-number.primary {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        .phase-number.accent {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent);
+        }
+
+        .phase-number.purple {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--purple);
+        }
+
+        .phase-number.yellow {
+            background: rgba(234, 179, 8, 0.2);
+            color: var(--yellow);
+        }
+
+        .phase-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .phase-content {
+            padding: 0 1.5rem 1.5rem;
+            margin-left: 3.5rem;
+        }
+
+        /* Result Header */
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--surface-light);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .result-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface-light);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .result-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .result-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Markdown Content */
+        .markdown-content {
+            line-height: 1.8;
+        }
+
+        .markdown-content h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin: 0.75rem 0;
+        }
+
+        .markdown-content li {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .markdown-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            margin-top: 3rem;
+        }
+
+        .tips-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .tip-card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--surface-light);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .tip-number {
+            width: 48px;
+            height: 48px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .tip-card h3 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tip-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Icon */
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .icon-sm {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--surface-light);
+            padding: 2rem 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .footer-container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-brand svg {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                </div>
+                <span class="logo-text">AI Fusion</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="generator.html" class="nav-link">Generator</a>
+                <a href="analyzer.html" class="nav-link">Analyzer</a>
+                <a href="roadmap.html" class="nav-link active">Roadmap</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+
+            <div class="nav-actions">
+                <a href="index.html" class="btn btn-primary">
+                    <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page">
+            <div class="page-header">
+                <div class="page-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                </div>
+                <h1>Build Roadmap Generator</h1>
+                <p>Turn your project idea into a step-by-step implementation plan with learning objectives and milestones.</p>
+            </div>
+
+            <!-- Input Form -->
+            <div class="card" id="input-card">
+                <div class="form-group">
+                    <label class="form-label" for="project-idea">Your Project Idea</label>
+                    <textarea class="form-textarea" id="project-idea" placeholder="Paste your project idea here. What are you building?"></textarea>
+                    <p class="form-helper" id="char-count">0 characters</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="skill-level">Your Skill Level</label>
+                    <select class="form-select" id="skill-level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-large glow-primary" id="generate-btn" onclick="generateRoadmap()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Generate Roadmap
+                </button>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result-section" style="display: none;">
+                <div class="result-header">
+                    <h3 style="font-weight: 600;">Your Build Roadmap</h3>
+                    <div class="result-actions">
+                        <button class="result-btn" onclick="copyToClipboard()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Copy
+                        </button>
+                        <button class="result-btn" onclick="generateNew()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            New
+                        </button>
+                    </div>
+                </div>
+
+                <div id="phases-container"></div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="tips-section" id="tips-section">
+                <h2>What You'll Get</h2>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-number">1</div>
+                        <h3>Phase-by-Phase Plan</h3>
+                        <p>Structured breakdown from foundation to deployment, with clear milestones.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">2</div>
+                        <h3>Learning Objectives</h3>
+                        <p>Specific concepts and technologies to learn at each stage of development.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">3</div>
+                        <h3>Acceptance Criteria</h3>
+                        <p>Clear definitions of done so you know exactly when each phase is complete.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                <span>AI Fusion</span>
+            </div>
+            <p class="footer-text">Built with Next.js, Tailwind CSS, and Gemini AI</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy</a>
+                <a href="#" class="footer-link">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentRoadmap = '';
+
+        // Character count for textarea
+        document.getElementById('project-idea').addEventListener('input', function() {
+            document.getElementById('char-count').textContent = this.value.length + ' characters';
+        });
+
+        // Check for idea in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const ideaParam = urlParams.get('idea');
+        if (ideaParam) {
+            document.getElementById('project-idea').value = decodeURIComponent(ideaParam);
+            document.getElementById('char-count').textContent = ideaParam.length + ' characters';
+        }
+
+        async function generateRoadmap() {
+            const projectIdea = document.getElementById('project-idea').value;
+            const skillLevel = document.getElementById('skill-level').value;
+
+            if (projectIdea.length < 20) {
+                alert('Please provide a valid project idea (at least 20 characters)');
+                return;
+            }
+
+            const btn = document.getElementById('generate-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Generating...';
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const phases = [
+                {
+                    title: 'Phase 1: Foundation',
+                    number: 'primary',
+                    tasks: [
+                        'Set up development environment (Node.js, git, code editor)',
+                        'Initialize project with package.json and dependencies',
+                        'Create basic project structure and folder organization',
+                        'Set up version control with Git and create repository',
+                        'Configure TypeScript for type safety',
+                        'Create basic HTML/CSS layout'
+                    ],
+                    concepts: [
+                        'Command line basics and npm/yarn usage',
+                        'Git workflow (branching, commits, pull requests)',
+                        'TypeScript fundamentals and type annotations',
+                        'Project structure best practices'
+                    ],
+                    tools: ['Node.js', 'Git', 'VS Code', 'TypeScript'],
+                    criteria: [
+                        'Development environment is fully configured',
+                        'Git repository initialized with initial commit',
+                        'Project compiles without errors',
+                        'Basic folder structure is in place'
+                    ]
+                },
+                {
+                    title: 'Phase 2: Core Features',
+                    number: 'accent',
+                    tasks: [
+                        'Design and implement data models',
+                        'Create API endpoints for CRUD operations',
+                        'Build frontend components and pages',
+                        'Implement state management',
+                        'Add form validation and error handling',
+                        'Create API documentation'
+                    ],
+                    concepts: [
+                        'RESTful API design principles',
+                        'Database schema design',
+                        'Component-based architecture',
+                        'State management patterns',
+                        'Input validation and sanitization'
+                    ],
+                    tools: ['Express/Fastify', 'React', 'Prisma', 'Swagger'],
+                    criteria: [
+                        'All core features are functional',
+                        'API endpoints return correct responses',
+                        'Frontend components render correctly',
+                        'Error messages are user-friendly'
+                    ]
+                },
+                {
+                    title: 'Phase 3: Polish & Testing',
+                    number: 'purple',
+                    tasks: [
+                        'Write unit tests for critical functions',
+                        'Implement integration tests for API endpoints',
+                        'Add loading states and progress indicators',
+                        'Implement error boundaries in React',
+                        'Optimize performance and bundle size',
+                        'Conduct code review and refactoring'
+                    ],
+                    concepts: [
+                        'Test-driven development (TDD)',
+                        'Unit testing with Jest/Vitest',
+                        'Integration testing strategies',
+                        'Performance optimization techniques',
+                        'Code quality and refactoring'
+                    ],
+                    tools: ['Jest', 'React Testing Library', 'Lighthouse'],
+                    criteria: [
+                        'Test coverage meets project standards',
+                        'All tests pass without failures',
+                        'Performance metrics are acceptable',
+                        'No critical bugs in core features'
+                    ]
+                },
+                {
+                    title: 'Phase 4: Deployment & Launch',
+                    number: 'yellow',
+                    tasks: [
+                        'Set up CI/CD pipeline',
+                        'Configure environment variables',
+                        'Deploy to production server',
+                        'Set up monitoring and logging',
+                        'Create user documentation',
+                        'Gather feedback and iterate'
+                    ],
+                    concepts: [
+                        'Continuous Integration/Continuous Deployment',
+                        'Environment configuration management',
+                        'Production deployment strategies',
+                        'Monitoring and observability',
+                        'User documentation best practices'
+                    ],
+                    tools: ['Vercel/Netlify', 'GitHub Actions', 'Sentry', 'PM2'],
+                    criteria: [
+                        'Application is live and accessible',
+                        'CI/CD pipeline runs successfully',
+                        'Monitoring is set up and functional',
+                        'Documentation is complete'
+                    ]
+                }
+            ];
+
+            currentRoadmap = phases;
+            renderPhases(phases);
+
+            document.getElementById('input-card').style.display = 'none';
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('tips-section').style.display = 'none';
+
+            btn.disabled = false;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg> Generate Roadmap`;
+        }
+
+        function renderPhases(phases) {
+            const container = document.getElementById('phases-container');
+            container.innerHTML = phases.map((phase, index) => `
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number ${phase.number}">${index + 1}</div>
+                        <div class="phase-title">${phase.title}</div>
+                    </div>
+                    <div class="phase-content markdown-content">
+                        <h4>Tasks</h4>
+                        <ul>${phase.tasks.map(task => `<li>${task}</li>`).join('')}</ul>
+
+                        <h4>Concepts to Learn</h4>
+                        <ul>${phase.concepts.map(concept => `<li>${concept}</li>`).join('')}</ul>
+
+                        <h4>Tools & Libraries</h4>
+                        <ul>${phase.tools.map(tool => `<li>${tool}</li>`).join('')}</ul>
+
+                        <h4>Acceptance Criteria</h4>
+                        <ul>${phase.criteria.map(criterion => `<li>${criterion}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateNew() {
+            document.getElementById('input-card').style.display = 'block';
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('tips-section').style.display = 'block';
+            document.getElementById('project-idea').value = '';
+            document.getElementById('char-count').textContent = '0 characters';
+            history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        async function copyToClipboard() {
+            const text = currentRoadmap.map((phase, index) => 
+                `${phase.title}\n${'='.repeat(phase.title.length)}\n\nTasks:\n${phase.tasks.map(t => `- ${t}`).join('\n')}\n\nConcepts:\n${phase.concepts.map(c => `- ${c}`).join('\n')}\n\nTools:\n${phase.tools.map(t => `- ${t}`).join('\n')}\n\nCriteria:\n${phase.criteria.map(c => `- ${c}`).join('\n')}`
+            ).join('\n\n');
+
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('Roadmap copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+    </script>
+</body>
+</html>
