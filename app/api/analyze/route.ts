@@ -1,17 +1,52 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { NextResponse } from 'next/server'
+import { rateLimiter, getClientIp } from '@/app/lib/rateLimiter'
+import { createSuccessResponse, createErrorResponse, handleApiError, validateRequired } from '@/app/lib/apiHandler'
+import { appCache, generateCacheKey } from '@/app/lib/cache'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const clientIp = getClientIp(request)
+    if (!rateLimiter.isAllowed(clientIp)) {
+      const resetTime = rateLimiter.getResetTime(clientIp)
+      return createErrorResponse(
+        `Rate limit exceeded. Try again in ${resetTime} seconds.`,
+        429
+      )
+    }
+
     const body = await request.json()
     const { projectDescription } = body
 
-    if (!projectDescription || projectDescription.length < 20) {
-      return NextResponse.json(
-        { error: 'Please provide a more detailed project description (at least 20 characters)' },
-        { status: 400 }
+    // Validation
+    const validation = validateRequired(body, ['projectDescription'])
+    if (!validation.valid) {
+      return createErrorResponse(
+        `Missing required fields: ${validation.missingFields.join(', ')}`,
+        400
+      )
+    }
+
+    if (projectDescription.length < 20) {
+      return createErrorResponse(
+        'Please provide a more detailed project description (at least 20 characters)',
+        400
+      )
+    }
+
+    // Check cache
+    const cacheKey = generateCacheKey('analyze', { projectDescription: projectDescription.slice(0, 50) })
+    const cachedResult = appCache.get<{ analysis: string }>(cacheKey)
+    if (cachedResult) {
+      return createSuccessResponse({ analysis: cachedResult.analysis })
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return createErrorResponse(
+        'API configuration error. Please contact support.',
+        500
       )
     }
 
@@ -65,13 +100,11 @@ Be honest, constructive, and specific. Focus on actionable feedback rather than 
     const response = await result.response
     const text = response.text()
 
-    return NextResponse.json({ analysis: text })
+    const responseData = { analysis: text }
+    appCache.set(cacheKey, responseData)
+
+    return createSuccessResponse(responseData)
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Error analyzing idea:', errorMessage)
-    return NextResponse.json(
-      { error: errorMessage || 'Failed to analyze project idea' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

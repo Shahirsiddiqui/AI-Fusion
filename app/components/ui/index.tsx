@@ -3,6 +3,8 @@
 import { ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 
+export { ErrorBoundary } from './ErrorBoundary'
+
 interface ButtonProps {
   children: ReactNode
   onClick?: () => void

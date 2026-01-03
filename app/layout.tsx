@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import './globals.css'
-import { Code2, Menu, X, Github, Sparkles } from 'lucide-react'
+import { Code2, Menu, X, Sparkles } from 'lucide-react'
+import { ErrorBoundary } from './components/ui'
 
 export const metadata: Metadata = {
   title: 'AI Fusion - Build Better Software Projects',
@@ -16,18 +17,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="flex flex-col min-h-screen">
-          {/* Navigation */}
-          <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-surface">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between h-16">
-                {/* Logo */}
-                <Link href="/" className="flex items-center space-x-2 group">
-                  <div className="p-2 bg-primary rounded-lg glow-primary group-hover:scale-110 transition-transform">
-                    <Code2 className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-xl font-bold gradient-text">AI Fusion</span>
-                </Link>
+        <ErrorBoundary>
+          <div className="flex flex-col min-h-screen">
+            {/* Navigation */}
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-surface">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
+                  {/* Logo */}
+                  <Link href="/" className="flex items-center space-x-2 group">
+                    <div className="p-2 bg-primary rounded-lg glow-primary group-hover:scale-110 transition-transform">
+                      <Code2 className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="text-xl font-bold gradient-text">AI Fusion</span>
+                  </Link>
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-8">
@@ -39,14 +41,6 @@ export default function RootLayout({
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center space-x-4">
-                  <a
-                    href="https://github.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface rounded-lg transition-colors"
-                  >
-                    <Github className="w-5 h-5" />
-                  </a>
                   <Link
                     href="/generator"
                     className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors glow-primary"
@@ -101,7 +95,8 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-        </div>
+          </div>
+        </ErrorBoundary>
       </body>
     </html>
   )

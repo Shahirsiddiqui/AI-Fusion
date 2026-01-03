@@ -1,17 +1,45 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { NextResponse } from 'next/server'
+import { rateLimiter, getClientIp } from '@/app/lib/rateLimiter'
+import { createSuccessResponse, createErrorResponse, handleApiError, validateRequired } from '@/app/lib/apiHandler'
+import { appCache, generateCacheKey } from '@/app/lib/cache'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const clientIp = getClientIp(request)
+    if (!rateLimiter.isAllowed(clientIp)) {
+      const resetTime = rateLimiter.getResetTime(clientIp)
+      return createErrorResponse(
+        `Rate limit exceeded. Try again in ${resetTime} seconds.`,
+        429
+      )
+    }
+
     const body = await request.json()
     const { skillLevel, techFocus, interestDomain } = body
 
-    if (!skillLevel || !techFocus || !interestDomain) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+    // Validation
+    const validation = validateRequired(body, ['skillLevel', 'techFocus', 'interestDomain'])
+    if (!validation.valid) {
+      return createErrorResponse(
+        `Missing required fields: ${validation.missingFields.join(', ')}`,
+        400
+      )
+    }
+
+    // Check cache
+    const cacheKey = generateCacheKey('generate', { skillLevel, techFocus, interestDomain })
+    const cachedResult = appCache.get<{ idea: string }>(cacheKey)
+    if (cachedResult) {
+      return createSuccessResponse({ idea: cachedResult.idea })
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return createErrorResponse(
+        'API configuration error. Please contact support.',
+        500
       )
     }
 
@@ -63,13 +91,16 @@ Remember: Focus on engineering clarity, not motivational language. The project s
     const response = await result.response
     const text = response.text()
 
-    return NextResponse.json({ idea: text })
+    const responseData = { idea: text }
+    appCache.set(cacheKey, responseData)
+
+    return createSuccessResponse(responseData)
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Error generating idea:', errorMessage)
-    return NextResponse.json(
-      { error: errorMessage || 'Failed to generate project idea' },
-      { status: 500 }
-    )
+    console.error('Generate API Error Details:', error)
+    if (error instanceof Error) {
+      console.error('Error Message:', error.message)
+      console.error('Error Stack:', error.stack)
+    }
+    return handleApiError(error)
   }
 }

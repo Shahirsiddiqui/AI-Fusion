@@ -1,17 +1,52 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { NextResponse } from 'next/server'
+import { rateLimiter, getClientIp } from '@/app/lib/rateLimiter'
+import { createSuccessResponse, createErrorResponse, handleApiError, validateRequired } from '@/app/lib/apiHandler'
+import { appCache, generateCacheKey } from '@/app/lib/cache'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const clientIp = getClientIp(request)
+    if (!rateLimiter.isAllowed(clientIp)) {
+      const resetTime = rateLimiter.getResetTime(clientIp)
+      return createErrorResponse(
+        `Rate limit exceeded. Try again in ${resetTime} seconds.`,
+        429
+      )
+    }
+
     const body = await request.json()
     const { projectIdea, skillLevel } = body
 
-    if (!projectIdea || projectIdea.length < 20) {
-      return NextResponse.json(
-        { error: 'Please provide a valid project idea to generate a roadmap' },
-        { status: 400 }
+    // Validation
+    const validation = validateRequired(body, ['projectIdea'])
+    if (!validation.valid) {
+      return createErrorResponse(
+        `Missing required fields: ${validation.missingFields.join(', ')}`,
+        400
+      )
+    }
+
+    if (projectIdea.length < 20) {
+      return createErrorResponse(
+        'Please provide a valid project idea to generate a roadmap (at least 20 characters)',
+        400
+      )
+    }
+
+    // Check cache
+    const cacheKey = generateCacheKey('roadmap', { projectIdea: projectIdea.slice(0, 50), skillLevel: skillLevel || 'Intermediate' })
+    const cachedResult = appCache.get<{ roadmap: string }>(cacheKey)
+    if (cachedResult) {
+      return createSuccessResponse({ roadmap: cachedResult.roadmap })
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return createErrorResponse(
+        'API configuration error. Please contact support.',
+        500
       )
     }
 
@@ -145,13 +180,11 @@ Keep the roadmap practical, developer-focused, and tailored to the specified ski
     const response = await result.response
     const text = response.text()
 
-    return NextResponse.json({ roadmap: text })
+    const responseData = { roadmap: text }
+    appCache.set(cacheKey, responseData)
+
+    return createSuccessResponse(responseData)
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Error generating roadmap:', errorMessage)
-    return NextResponse.json(
-      { error: errorMessage || 'Failed to generate roadmap' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
